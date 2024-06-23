@@ -1,0 +1,101 @@
+{% extends 'pages/layout.html' %}
+{% load humanize %}
+{% load static %}
+{% block content %}
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+  <style>
+    .orders {
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .order {
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .order h2,
+    .order h3 {
+      color: #333;
+    }
+    
+    table {
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    table,
+    th,
+    td {
+      border: 1px solid #ddd;
+      border-collapse: collapse;
+    }
+    
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    tbody tr:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+  </style>
+
+  <div class="container">
+    <h1>Đơn hàng đã đặt</h1>
+    {% if chitietdathang %}
+      <div class="orders">
+        {% for order in chitietdathang %}
+          <div class="order">
+            <h2>Mã đơn hàng: {{ order.hoa_don.maHD }}</h2>
+            <p>
+              <b>Ngày đặt hàng:</b> {{ order.hoa_don.ngayDatHang }}
+            </p>
+            <p>
+              <b>Tổng tiền:</b> {{ order.hoa_don.tongTien|intcomma }} VNĐ
+            </p>
+            <p>
+              <b>Phương thức thanh toán:</b> {{ order.hoa_don.phuongThucThanhToan }}
+            </p>
+            <p>
+              <b>Tình trạng đơn hàng:</b>{{ order.hoa_don.tinhTrang.tenTT }}
+            </p>
+            <h3>Chi tiết đơn hàng:</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th>Số lượng</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cthd in order.cthd_list %}
+                  <tr>
+                    <td>{{ cthd.maSP.tenSP }}</td>
+                    <td>{{ cthd.soLuong }}</td>
+                    <td>{{ cthd.thanhTien|intcomma }} VNĐ</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>Bạn chưa đặt đơn hàng nào.</p>
+    {% endif %}
+    <a href="{% url 'xemGioHang' %}" class="btn btn-secondary mt-3">Quay lại giỏ hàng</a>
+  </div>
+  
+{% endblock %}

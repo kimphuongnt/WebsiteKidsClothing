@@ -1,0 +1,41 @@
+{% extends 'pages/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+  <div class="container">
+    <h1 class="mt-5">Danh sách yêu thích</h1>
+    {% if xemYeuThich %}
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light text-center">
+          <tr>
+            <th>Hình ảnh</th>
+            <th>Tên sản phẩm</th>
+            <th>Giá bán</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in xemYeuThich %}
+            <tr class="text-center">
+              <td>
+                {% if item.maSP.hinhanh %}
+                  <img src="{{ item.maSP.hinhanh.url }}" alt="{{ item.maSP.tenSP }}" class="img-fluid" width="100px" />
+                {% endif %}
+              </td>
+              <td class="d-flex-column justify-content-center align-content-center">
+                <p class="text-danger">{{ item.maSP.tenSP }}</p>
+               <p class="text-secondary">{{ item.maSP.moTa }}</p> 
+              </td>
+              <td>{{ item.maSP.giaBan|intcomma }} VNĐ</td>
+              <td>
+                <a href="{% url 'chi-tiet-san-pham' item.maSP.maSP %}">Xem chi tiết</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Bạn chưa có sản phẩm nào trong danh sách yêu thích.</p>
+    {% endif %}
+  </div>
+{% endblock %}

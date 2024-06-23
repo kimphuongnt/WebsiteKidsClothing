@@ -1,0 +1,61 @@
+{% extends 'pages/layout.html' %}
+{% load humanize %}
+{% block content %}
+  <div class="container mt-5 pt-5 mb-5">
+    <a href="{% url 'xemGioHang' %}" class="text-left"><i class="fa fa-caret-left" aria-hidden="true"></i> Trở về giỏ hàng</a>
+    {% if gioHang_thanhTien %}
+      <form method="post" action="{% url 'thanhToan' %}">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-6">
+            <table class="table table-borderless table-responsive">
+              {% for sp in gioHang_thanhTien %}
+                <tr>
+                  <td class="text-center">
+                    <img src="{{ sp.hinhAnh }}" alt="{{ sp.tenSP }}" width="150" />
+                  </td>
+                  <td>
+                    <b>{{ sp.tenSP }}</b> <br />
+                    <p class="text-secondary">
+                      Màu {{ sp.mauSac }} <br /> Size {{ sp.kichCo }}
+                    </p>
+                    <b>Số lượng:</b>{{ sp.item.soLuong }} <br />
+                    <br />
+                    <b><i>{{ sp.thanhTien|intcomma }} VNĐ</i></b>
+                  </td>
+                </tr>
+              {% endfor %}
+            </table>
+          </div>
+          <div class="col-6">
+            <div class="card p-3 mb-2">
+              <center>
+                <h4>Thông tin giao hàng</h4>
+              </center>
+              <div class="form-group">
+                <label for="tenKH">Tên khách hàng</label>
+                <input type="text" class="form-control" id="tenKH" name="tenKH" value="{{ khachHang.tenKH }}" readonly />
+              </div>
+              <div class="form-group">
+                <label for="diaChi">Địa chỉ</label>
+                <input type="text" class="form-control" id="diaChi" name="diaChi" value="{{ khachHang.diaChi }}" readonly />
+              </div>
+              <div class="form-group">
+                <label for="soDienThoai">Số điện thoại</label>
+                <input type="text" class="form-control" id="soDienThoai" name="soDienThoai" value="{{ khachHang.soDT }}" readonly />
+              </div>
+              <div>
+                <a class="btn btn-outline-dark" href="{% url 'xemThongTinKhachHang' %}">Chỉnh sửa thông tin</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <h2>Tổng tiền: <span>{{ tongTien|intcomma }}</span> VNĐ</h2>
+          <button type="submit" name="pttt" value="cash" class="btn btn-success mt-3">Thanh toán khi nhận hàng</button>
+          <button type="submit" name="pttt" value="momo" class="btn mt-3" style="background-color: #D82D8B; color: white;">Thanh toán bằng MoMo</button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}

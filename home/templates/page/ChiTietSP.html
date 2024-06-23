@@ -1,0 +1,347 @@
+{% extends 'pages/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+  <style>
+    .btn-active {
+      color: #fff !important;
+      background-color: #000000 !important;
+    }
+    .btn-like-active {
+      color: #fff !important;
+      background-color: #ff0000 !important;
+    }
+    .fixed-column {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 110px;
+      z-index: 999;
+      background-color: #fff;
+    }
+    .image-container {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .image-container .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .image-container:hover .overlay {
+      opacity: 1;
+    }
+    
+    .btn-xem-chi-tiet {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: transparent;
+      color: #fff;
+      padding: 10px 20px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      text-decoration: none;
+    }
+    .btn-xem-chi-tiet:hover {
+      text-decoration: none;
+    }
+    
+    .image-container:hover .btn-xem-chi-tiet {
+      opacity: 1;
+    }
+    
+    .card-body {
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .card-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .card-text.description {
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      display: -webkit-box;
+      text-overflow: ellipsis;
+    }
+    
+    .d-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .heart-icon {
+      color: grey;
+      cursor: pointer;
+    }
+    
+    .heart-icon.red {
+      color: red;
+    }
+    .nav-link {
+      text-decoration: none;
+      padding: 10px;
+    }
+    .nav-link.active {
+      text-decoration: underline;
+    }
+  </style>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="d-flex-column justify-content-center">
+          <div class="d-flex-column justify-content-center">
+            {% if san_pham.hinhanh %}
+              <img src="{{ san_pham.hinhanh.url }}" alt="{{ san_pham.tenSP }}" class="img-fluid mb-3" width="450px" />
+            {% endif %}
+            {% if san_pham.hinhanh1 %}
+              <img src="{{ san_pham.hinhanh1.url }}" alt="{{ san_pham.tenSP }}" class="img-fluid mb-3" width="450px" />
+            {% endif %}
+            {% if san_pham.hinhanh2 %}
+              <img src="{{ san_pham.hinhanh2.url }}" alt="{{ san_pham.tenSP }}" class="img-fluid mb-3" width="450px" />
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mt-5 pt-3 ps-3">
+        <div class="fixed-column">
+          <h1>{{ san_pham.tenSP }}</h1>
+          <h3><i>{{ san_pham.giaBan|intcomma }} VNĐ</i></h3>
+          <hr />
+          <h4>Kích cỡ</h4>
+          <div class="row">
+            {% for size in kichCo %}
+              <div class="col-md-4">
+                <button class="btn btn-outline-dark w-100 btn-size" type="button">{{ size.maSize }}</button>
+              </div>
+            {% endfor %}
+          </div>
+          <br />
+          <div class="d-flex">
+            <b>Màu sắc: &nbsp;</b>{{ san_pham.mauSac }}
+          </div>
+          <form id="add-to-cart-form" method="POST" action="{% url 'addGioHang' san_pham.maSP %}">
+            {% csrf_token %}
+            <div class="row mt-4 flex-lg-grow-0">
+              <div class="col-6">
+                <input type="number" name="soLuong" value="1" min="1" max="{{ qlsp.soLuongTonKho }}" />
+              </div>
+              <div class="col-6 d-flex justify-content-end">
+                <br />
+                <b>Số lượng: &nbsp;</b>{{ qlsp.soLuongTonKho }}
+              </div>
+            </div>
+            <input type="hidden" name="kichCo" id="selected-size" value="{{ san_pham.kichCo }}" />
+            <div class="row mt-2">
+              <div class="col">
+                <input type="hidden" name="next" value="{{ request.path }}" />
+                <button type="submit" id="add-to-cart-btn" class="btn btn-warning w-100 p-2"><b><i class="fa fa-cart-plus" aria-hidden="true"></i> &nbspTHÊM GIỎ HÀNG</b></button>
+              </div>
+            </div>
+          </form>
+          <form id="add-to-favorites-form" method="POST" action="{% url 'addYeuThich' san_pham.maSP %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}" />
+            <div class="row mt-2">
+              <div class="col">
+                <button type="submit" id="like-btn" class="btn btn-outline-danger btn-like w-100 p-2 {{ is_favorite|yesno:'btn-like-active,' }}"><i class="fa fa-heart-o" aria-hidden="true"></i></button>
+              </div>
+            </div>
+          </form>
+          <div class="row mt-3">
+            <p class="text-secondary" style="text-align: justify;">
+              <i class="fa fa-info-circle" aria-hidden="true"></i>&nbspGiá sản phẩm đã bao gồm VAT, không bao gồm phí giao hàng. Thời gian giao hàng dự kiến 3-7 ngày làm việc. Mọi thắc mắc vui lòng xem thêm tại trang Dịch vụ khách hàng.
+            </p>
+          </div>
+          <div class="row">
+            <div class="d-flex justify-content-between mt-4">
+              <div>
+                <h4>MÔ TẢ SẢN PHẨM</h4>
+              </div>
+              <div>
+                <p class="text-secondary">Mã sản phẩm: {{ san_pham.maSP }}</p>
+              </div>
+            </div>
+            <div class="accordion accordion-flush" id="accordionFlushExample">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="flush-headingOne"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">Tổng quan</button></h2>
+                <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                  <div class="accordion-body">
+                    <p>
+                      <b>Mô tả sản phẩm:</b> {{ san_pham.moTa }}
+                      <br />
+                      <br />
+                      <b>Giới tính:</b> {{ san_pham.gioiTinh }}
+                      <br />
+                      <br />
+                      <b class="">Thương hiệu:</b> {{ san_pham.maNH.tenNH }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="flush-headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">Chất liệu</button></h2>
+                <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+                  <div class="accordion-body">
+                    <b>Chất liệu:</b> {{ san_pham.chatLieu }}
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="flush-headingThree"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">Hướng dẫn chăm sóc sản phẩm</button></h2>
+                <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+                  <div class="accordion-body">
+                    <b>Hướng dẫn chăm sóc sản phẩm:</b>
+                    <ul>
+                      <li>Phơi khô</li>
+                      <li>Giặt máy ở 40°</li>
+                      <li>Là ủi nhiệt độ trung bình</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr />
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <br />
+    <div class="row">
+      <div class="col d-flex justify-content-center align-items-center bg-dark text-white" style="height: 100px;">
+        <p style="font-size: 30px; margin: 0;">
+          <b>HÃY CHO CHÚNG TÔI BIẾT CẢM NGHĨ CỦA BẠN</b>
+        </p>
+      </div>
+    </div>
+    <div class="row mt-5 mb-5 d-flex justify-content-around">
+      <div></div>
+      <div class="col-4">
+        <div class="card shadow p-3">
+          <center>
+            <h3>Bình luận</h3>
+          </center>
+          <table class="table">
+            {% for review in danhGia %}
+              <tr class="border-black border-bottom">
+                <td>
+                  <div class="review">
+                    <small>{{ review.ngayDanhGia|date:'d/m/Y' }}</small> &nbsp;
+                    <strong>{{ review.maKH.tenDN }}</strong> đánh giá {{ review.diemDanhGia }}/5<p>{{ review.danhGia }}</p>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <p>Chưa có đánh giá nào.</p>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      <div class="col-6">
+        <h3>Đánh giá sản phẩm</h3>
+        <form method="POST" action="" class="review-form">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="diemDanhGia" class="form-label">Chọn thang điểm</label>
+            <select name="diemDanhGia" id="diemDanhGia" class="form-control">
+              <option value="1">1 điểm</option>
+              <option value="2">2 điểm</option>
+              <option value="3">3 điểm</option>
+              <option value="4">4 điểm</option>
+              <option value="5">5 điểm</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="danhGia" class="form-label">Bình luận</label>
+            <textarea name="danhGia" id="danhGia" rows="3" class="form-control"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col d-flex justify-content-center align-items-center" style="height: 100px;">
+      <p style="font-size: 30px; margin: 0;">
+        <b>CÓ THỂ BẠN SẼ THÍCH</b>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    {% for sp in sanpham_list %}
+      <div class="col-md-4 mb-4">
+        <div class="card box-shadow">
+          <div class="image-container">
+            <img class="card-img-top" src="{{ sp.hinhanh.url }}" alt="{{ sp.tenSP }}" />
+            <div class="overlay"></div>
+            <a href="{% url 'chi-tiet-san-pham' maSP=sp.maSP %}" class="btn-xem-chi-tiet" style="text-decoration: none;">Xem Chi Tiết</a>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">{{ sp.tenSP }}</h5>
+            <p class="card-text description">{{ sp.moTa }}</p>
+            <div class="card-text d-flex">
+              <b><i>{{ sp.giaBan|intcomma }} VNĐ</i></b>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="modal fade" id="modalChonSize" tabindex="-1" aria-labelledby="sizeWarningModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="sizeWarningModalLabel">Cảnh Báo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">Vui lòng chọn kích cỡ trước khi thêm sản phẩm vào giỏ hàng.</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      $('.btn-size').on('click', function () {
+        $('.btn-size').removeClass('btn-active')
+        $(this).addClass('btn-active')
+        $('#selected-size').val($(this).text().trim())
+      })
+    
+      $('#add-to-cart-btn').on('click', function (e) {
+        if (!$('.btn-size').hasClass('btn-active')) {
+          e.preventDefault()
+          $('#modalChonSize').modal('show')
+        } else {
+          $('#add-to-cart-form').submit()
+        }
+      })
+    
+      $('#like-btn').on('click', function (e) {
+        e.preventDefault()
+        $(this).toggleClass('btn-like-active')
+        $('#add-to-favorites-form').submit()
+      })
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% load static %}
+{% load humanize %}
+<style>
+  .image-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .image-container .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .image-container:hover .overlay {
+    opacity: 1;
+  }
+  
+  .btn-xem-chi-tiet {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: transparent;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    text-decoration: none;
+  }
+  .btn-xem-chi-tiet:hover {
+    text-decoration: none;
+  }
+  
+  .image-container:hover .btn-xem-chi-tiet {
+    opacity: 1;
+  }
+  
+  .card-body {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .card-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-text.description {
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+  }
+  
+  .d-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .heart-icon {
+    color: grey;
+    cursor: pointer;
+  }
+  
+  .heart-icon.red {
+    color: red;
+  }
+  .nav-link {
+    text-decoration: none;
+    padding: 10px;
+  }
+  .nav-link.active {
+    text-decoration: underline;
+  }
+</style>
+<div class="container-fluid mt-3 mb-3">
+  <div class="row">
+    <div class="col d-flex justify-content-center align-items-center" style="height: 100px;">
+      <p style="font-size: 30px; margin: 0;">
+        <b>CÓ THỂ BẠN SẼ THÍCH</b>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    {% for sp in sanpham_list %}
+      {% if forloop.counter <= 12 %}
+        <div class="col-md-3 mb-4 mt-5">
+          <div class="card box-shadow">
+            <div class="image-container">
+              <img class="card-img-top" src="{{ sp.hinhanh.url }}" alt="{{ sp.tenSP }}" />
+              <div class="overlay"></div>
+              <a href="{% url 'chi-tiet-san-pham' maSP=sp.maSP %}" class="btn-xem-chi-tiet">Xem Chi Tiết</a>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ sp.tenSP }}</h5>
+              <p class="card-text description">{{ sp.moTa }}</p>
+              <div class="card-text d-flex">
+                <b><i>{{ sp.giaBan|intcomma }} VNĐ</i></b>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  
+</div>
+<script>
+  function toggleHeart(element) {
+    element.classList.toggle('red')
+    let icon = element.querySelector('i')
+    if (icon.classList.contains('fa-heart-o')) {
+      icon.classList.remove('fa-heart-o')
+      icon.classList.add('fa-heart')
+    } else {
+      icon.classList.remove('fa-heart')
+      icon.classList.add('fa-heart-o')
+    }
+  }
+</script>

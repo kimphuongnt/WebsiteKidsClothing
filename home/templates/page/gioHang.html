@@ -1,0 +1,231 @@
+{% extends 'pages/layout.html' %}
+{% load humanize %}
+{% load static %}
+{% block content %}
+  <style>
+    .image-container {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .image-container .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .image-container:hover .overlay {
+      opacity: 1;
+    }
+    
+    .btn-xem-chi-tiet {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: transparent;
+      color: #fff;
+      padding: 10px 20px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      text-decoration: none;
+    }
+    .btn-xem-chi-tiet:hover {
+      text-decoration: none;
+    }
+    
+    .image-container:hover .btn-xem-chi-tiet {
+      opacity: 1;
+    }
+    
+    .card-body {
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .card-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .card-text.description {
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      display: -webkit-box;
+      text-overflow: ellipsis;
+    }
+    
+    .d-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .heart-icon {
+      color: grey;
+      cursor: pointer;
+    }
+    
+    .heart-icon.red {
+      color: red;
+    }
+    .nav-link {
+      text-decoration: none;
+      padding: 10px;
+    }
+    .nav-link.active {
+      text-decoration: underline;
+    }
+  </style>
+  <div class="container mt-5 mb-5">
+    <center>
+      <i class="fa fa-fas fa-shopping-bag mt-3 mb-3" aria-hidden="true" style="font-size: 60px;"></i>
+    </center>
+    {% if request.session.khach_hang_id %}
+      {% if gioHang_thanhTien %}
+        <div class="row d-flex justify-content-between align-items-center">
+          <div class="col">
+            <a href="{% url 'index' %}" class="text-left"><i class="fa fa-caret-left" aria-hidden="true"></i> Mua thêm sản phẩm khác</a>
+          </div>
+          <div class="col text-right">
+            <a href="#" data-toggle="modal" data-target="#xacNhanXoaTatCaModal" style="color: red;"><i class="fa fa-trash" aria-hidden="true"></i> Xóa tất cả</a>
+          </div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr class="text-center">
+              <th>Ảnh</th>
+              <th>Sản phẩm</th>
+              <th>Số lượng</th>
+              <th>Đơn giá</th>
+              <th>Thành tiền</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sp in gioHang_thanhTien %}
+              <tr>
+                <td>
+                  <img src="{{ sp.hinhAnh }}" alt="{{ sp.tenSP }}" style="width: 100px; height: auto;" />
+                </td>
+                <td>
+                  {{ sp.tenSP }}<br /><p class="text-secondary">Màu {{ sp.mauSac }} <br> Size {{sp.kichCo}}</p>
+                </td>
+
+                <td>
+                  <input type="number" name="soLuong_{{ sp.item.maSP.maSP }}" value="{{ sp.item.soLuong }}" min="1" class="form-control soLuongInput" data-maSP="{{ sp.item.maSP.maSP }}" />
+                </td>
+                <td>{{ sp.item.donGia|intcomma }} VNĐ</td>
+                <td class="thanhTien">{{ sp.thanhTien|intcomma }} VNĐ</td>
+                <td>
+                  <a href="{% url 'xoaSPGioHang' sp.item.maSP.maSP sp.kichCo %}" style="color: red;">Xóa</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="col text-right">
+          <h2>Tổng tiền: <span id="tongTien">{{ tongTien|intcomma }}</span> VNĐ</h2>
+          <a href="{% url 'thanhToan' %}" class="btn btn-warning mt-3">Mua ngay</a>
+        </div>
+        <div class="col text-right"></div>
+      {% else %}
+        <a href="{% url 'sanpham_list' %}" class="text-left"><i class="fa fa-caret-left" aria-hidden="true"></i>&nbsp;Mua thêm sản phẩm khác</a>
+        <p>Giỏ hàng của bạn đang trống.</p>
+      {% endif %}
+    {% else %}
+      <p>Vui lòng đăng nhập để xem giỏ hàng của bạn.</p>
+      <a href="{% url 'login' %}" class="btn btn-primary">Đăng nhập</a>
+    {% endif %}
+  </div>
+
+  <div class="container-fluid mt-3 mb-3">
+    <div class="row">
+      <div class="col d-flex justify-content-center align-items-center" style="height: 100px;">
+        <p style="font-size: 30px; margin: 0;">
+          <b>CÓ THỂ BẠN SẼ THÍCH</b>
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      {% for sp in sanpham_list %}
+        <div class="col-md-4 mb-4">
+          <div class="card box-shadow">
+            <div class="image-container">
+              <img class="card-img-top" src="{{ sp.hinhanh.url }}" alt="{{ sp.tenSP }}" />
+              <div class="overlay"></div>
+              <a href="{% url 'chi-tiet-san-pham' maSP=sp.maSP %}" class="btn-xem-chi-tiet" style="text-decoration: none;">Xem Chi Tiết</a>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ sp.tenSP }}</h5>
+              <p class="card-text description">{{ sp.moTa }}</p>
+              <div class="card-text d-flex">
+                <b><i>{{ sp.giaBan|intcomma }} VNĐ</i></b>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="modal fade" id="xacNhanXoaTatCaModal" tabindex="-1" role="dialog" aria-labelledby="xacNhanXoaTatCa" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="xacNhanXoaTatCa">Xóa giỏ hàng</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng không?</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+          <a href="{% url 'xoaTatCaGioHang' %}" class="btn btn-danger">Xóa tất cả</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const soLuongInputs = document.querySelectorAll('.soLuongInput')
+    
+      soLuongInputs.forEach((input) => {
+        input.addEventListener('change', function () {
+          const maSP = this.getAttribute('data-maSP')
+          const soLuong = this.value
+    
+          fetch('{% url "capNhatGioHang" %}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ maSP: maSP, soLuong: soLuong })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                const thanhTienElement = this.closest('tr').querySelector('.thanhTien')
+                thanhTienElement.textContent = data.thanhTien.toLocaleString()
+                document.getElementById('tongTien').textContent = data.tongTien.toLocaleString()
+              }
+            })
+        })
+      })
+    })
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

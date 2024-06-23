@@ -1,0 +1,10 @@
+{% extends 'pages/layout.html' %}
+{% block content %}
+<h1>Thanh toán với VNPAY</h1>
+<form method="POST" action="{% url 'thanh_toan_vnpay' %}">
+  {% csrf_token %}
+  <label for="tong">Số tiền:</label>
+  <input type="number" id="tong" name="tong" required />
+  <button type="submit">Thanh toán</button>
+</form>
+{% endblock %}

@@ -1,0 +1,18 @@
+/* Tùy chỉnh màu sắc, font chữ, v.v. cho admin */
+body {
+    background-color: #fb0000;
+}
+
+#header {
+    background-color: #007bff;
+}
+
+#header h1 a {
+    color: #fff;
+}
+
+#content-main {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
